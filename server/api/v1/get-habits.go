@@ -9,7 +9,7 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-func init() {
+func InitGetHabits() {
 	functions.HTTP("HelloHTTP", HelloHTTP)
 }
 

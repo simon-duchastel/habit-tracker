@@ -1,0 +1,27 @@
+swagger: '2.0'
+info:
+  title: Habit Tracker APIs
+  description: APIs for the Habit Tracker app
+  version: 1.0.0
+host: habit-tracker-5bp5c3riyq-uw.a.run.app
+schemes:
+  - https
+produces:
+  - application/json
+paths:
+  /v1/habits:
+    get:
+      summary: Get the habits for the current user.
+      operationId: hello
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
+        protocol: h2
+      responses:
+        '200':
+          description: A list of habits.
+          schema:
+            type: string
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
