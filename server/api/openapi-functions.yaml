@@ -12,7 +12,7 @@ paths:
   /v1/habits:
     get:
       summary: Get the habits for the current user.
-      operationId: hello
+      operationId: getHabitsV1
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
         protocol: h2
