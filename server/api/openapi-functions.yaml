@@ -9,10 +9,16 @@ schemes:
 produces:
   - application/json
 paths:
-  /v1/habits:
-    get:
+  /v1/habits-foo:
+    post:
       summary: Get the habits for the current user.
-      operationId: getHabitsV1
+      operationId: postHabitsV1
+      parameters:
+        - in: body
+          name: Name
+          required: false
+          schema:
+            $ref: string
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
         protocol: h2
