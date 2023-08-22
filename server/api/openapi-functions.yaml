@@ -9,7 +9,7 @@ schemes:
 produces:
   - application/json
 paths:
-  /v1/habits-foo:
+  /v1/habits:
     post:
       summary: Get the habits for the current user.
       operationId: postHabitsV1
@@ -22,6 +22,8 @@ paths:
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
         protocol: h2
+      security:
+        - auth0_jwt: []
       responses:
         '200':
           description: A list of habits.
@@ -31,3 +33,11 @@ paths:
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+securityDefinitions:
+  auth0_jwt:
+    authorizationUrl: "https://simon-duchastel-habit-tracker.us.auth0.com/authorize"
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://simon-duchastel-habit-tracker.us.auth0.com/"
+    x-google-jwks_uri: "https://simon-duchastel-habit-tracker.us.auth0.com/.well-known/jwks.json"
+    x-google-audiences: "https://habit-tracker-api.simon.duchastel.com"
