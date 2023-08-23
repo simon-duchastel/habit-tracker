@@ -6,19 +6,40 @@ info:
 host: habit-tracker-5bp5c3riyq-uw.a.run.app
 schemes:
   - https
+consumes:
+  - application/json
 produces:
   - application/json
 paths:
-  /v1/habits:
-    post:
-      summary: Get the habits for the current user.
-      operationId: postHabitsV1
-      parameters:
-        - in: body
-          name: Name
-          required: false
+  /v1/whoami:
+    get:
+      summary: Gets the identity of the current user.
+      operationId: getWhoAmIV1
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-whoami
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: The identity of the currently signed-in user.
           schema:
-            $ref: string
+            $ref: '#/definitions/WhoAmIResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+  /v1/habits/{userId}:
+    get:
+      summary: Gets how many habits the user has completed each day for up to the last 100 days.
+      operationId: getHabitsV1
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The User ID of the user to lookup.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
         protocol: h2
@@ -26,13 +47,152 @@ paths:
         - auth0_jwt: []
       responses:
         '200':
-          description: A list of habits.
+          description: A list of how many habits the user has completed each day.
           schema:
-            type: string
+            $ref: '#/definitions/HabitsResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+        '404':
+          description: The user either does not exist or you do not have permission to view their habits.
+          schema:
+            type: string
+  /v1/habits/{userId}/day/{day}:
+    get:
+      summary: Get the habits the user has completed on a particular day.
+      operationId: getHabitsForDayV1
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The User ID of the user to lookup.
+        - in: path
+          name: day
+          required: true
+          schema:
+            type: string
+          description: The day to get the completed habits in the format "YYYY-MM-DD"
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-for-day
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: A list of habits.
+          schema:
+            $ref: '#/definitions/HabitsResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+        '404':
+          description: The user either does not exist or you do not have permission to view their habits.
+          schema:
+            type: string
+    post:
+      summary: Post that the user has completed a habit for a particular day.
+      operationId: postHabitForDayV1
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The User ID of the user to lookup.
+        - in: path
+          name: day
+          required: true
+          schema:
+            type: string
+          description: The day to get the completed habits in the format "YYYY-MM-DD"
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-post-habits-for-day
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: A list of habits.
+          schema:
+            $ref: '#/definitions/HabitsResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+        '404':
+          description: The user either does not exist or you does not have permission to post their habits.
+          schema:
+            type: string
+  /v1/goals/{userId}:
+    get:
+      summary: Get the user's current goals.
+      operationId: getGoalV1
+      parameters:
+        - in: body
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The User ID of the user to lookup.
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: A list of goals.
+          schema:
+            $ref: '#/definitions/GoalsResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+        '404':
+          description: The user either does not exist or you do not have permission to view their goals.
+          schema:
+            type: string
+  /v1/goal/{userId}/day/{day}:
+    get:
+      summary: Get the users's goals as they existed on a particular day.
+      operationId: getGoalForDayV1
+      parameters:
+        - in: body
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The User ID of the user to lookup.
+        - in: body
+          name: day
+          required: true
+          schema:
+            type: string
+          description: The day to get the goals on in the format "YYYY-MM-DD"
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals-for-day
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: A list of goals.
+          schema:
+            $ref: '#/definitions/GoalsResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+        '404':
+          description: The user either does not exist or you do not have permission to view their goals.
+          schema:
+            type: string
+
+# JWT config for Auth0
 securityDefinitions:
   auth0_jwt:
     authorizationUrl: "https://simon-duchastel-habit-tracker.us.auth0.com/authorize"
@@ -41,3 +201,35 @@ securityDefinitions:
     x-google-issuer: "https://simon-duchastel-habit-tracker.us.auth0.com/"
     x-google-jwks_uri: "https://simon-duchastel-habit-tracker.us.auth0.com/.well-known/jwks.json"
     x-google-audiences: "https://habit-tracker-api.simon.duchastel.com"
+
+# Schema for request/response types
+definitions:
+  # Responses
+  WhoAmIResponseV1:
+    type: object
+    properties:
+      identity:
+        $ref: '#/definitions/Identity'
+  HabitsResponseV1:
+    type: object
+    properties:
+      habits:
+        type: array
+        items:
+          type: string
+  GoalsResponseV1:
+    type: object
+    properties:
+      goals:
+        type: array
+        items:
+          type: string
+
+  # Models (used in request/response types)
+  Identity:
+    type: object
+    properties:
+      userId:
+        type: array
+        items:
+          type: string
