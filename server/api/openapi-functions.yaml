@@ -29,7 +29,7 @@ paths:
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
-  /v1/habits/{userId}/summary:
+  /v1/{userId}/habits/summary:
     get:
       summary: Gets how many habits the user has completed each day for up to the last 100 days.
       operationId: getHabitsSummaryV1
@@ -57,7 +57,7 @@ paths:
           description: The user either does not exist or you do not have permission to view their habits.
           schema:
             type: string
-  /v1/habits/{userId}/day/{day}:
+  /v1/{userId}/habits/day/{day}:
     get:
       summary: Get the habits the user has completed on a particular day.
       operationId: getHabitsForDayV1
@@ -122,7 +122,7 @@ paths:
           description: The user either does not exist or you does not have permission to post their habits.
           schema:
             type: string
-  /v1/goals/{userId}:
+  /v1/{userId}/goals:
     get:
       summary: Get the user's current goals.
       operationId: getGoalV1
@@ -150,7 +150,7 @@ paths:
           description: The user either does not exist or you do not have permission to view their goals.
           schema:
             type: string
-  /v1/goal/{userId}/day/{day}:
+  /v1/{userId}/goals/day/{day}:
     get:
       summary: Get the users's goals as they existed on a particular day.
       operationId: getGoalForDayV1
@@ -222,6 +222,4 @@ definitions:
     type: object
     properties:
       userId:
-        type: array
-        items:
-          type: string
+        type: string
