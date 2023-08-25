@@ -29,6 +29,7 @@ paths:
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
   /v1/{userId}/habits/summary:
     get:
       summary: Gets how many habits the user has completed each day for up to the last 100 days.
@@ -48,15 +49,17 @@ paths:
         '200':
           description: A list of how many habits the user has completed each day.
           schema:
-            $ref: '#/definitions/HabitsResponseV1'
+            $ref: '#/definitions/HabitsSummaryResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
         '404':
           description: The user either does not exist or you do not have permission to view their habits.
           schema:
             type: string
+            example: "Descriptive error message"
   /v1/{userId}/habits/day/{day}:
     get:
       summary: Get the habits the user has completed on a particular day.
@@ -81,18 +84,20 @@ paths:
         '200':
           description: A list of habits.
           schema:
-            $ref: '#/definitions/HabitsResponseV1'
+            $ref: '#/definitions/HabitsForDayResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
         '404':
           description: The user either does not exist or you do not have permission to view their habits.
           schema:
             type: string
+            example: "Descriptive error message"
     post:
       summary: Post that the user has completed a habit for a particular day.
-      operationId: postHabitForDayV1
+      operationId: postHabitsForDayV1
       parameters:
         - in: path
           name: userId
@@ -104,6 +109,11 @@ paths:
           required: true
           type: string
           description: The day to get the completed habits in the format "YYYY-MM-DD"
+        - in: body
+          name: body
+          description: The user to create.  
+          schema:
+            $ref: '#/definitions/HabitsForDayRequestV1'
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-post-habits-for-day
         protocol: h2
@@ -113,19 +123,21 @@ paths:
         '200':
           description: A list of habits.
           schema:
-            $ref: '#/definitions/HabitsResponseV1'
+            $ref: '#/definitions/HabitsForDayResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
         '404':
           description: The user either does not exist or you does not have permission to post their habits.
           schema:
             type: string
+            example: "Descriptive error message"
   /v1/{userId}/goals:
     get:
       summary: Get the user's current goals.
-      operationId: getGoalV1
+      operationId: getGoalsV1
       parameters:
         - in: path
           name: userId
@@ -146,14 +158,50 @@ paths:
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
         '404':
           description: The user either does not exist or you do not have permission to view their goals.
           schema:
             type: string
+            example: "Descriptive error message"
+    post:
+      summary: Modify the user's current goals.
+      operationId: postGoalsV1
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          type: string
+          description: The User ID of the user to lookup.
+        - in: body
+          name: body
+          description: The user to create.  
+          schema:
+            $ref: '#/definitions/GoalsRequestV1'
+      x-google-backend:
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals
+        protocol: h2
+      security:
+        - auth0_jwt: []
+      responses:
+        '200':
+          description: A list of goals.
+          schema:
+            $ref: '#/definitions/GoalsResponseV1'
+        '401':
+          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
+          schema:
+            type: string
+            example: "Descriptive error message"
+        '404':
+          description: The user either does not exist or you do not have permission to view their goals.
+          schema:
+            type: string
+            example: "Descriptive error message"
   /v1/{userId}/goals/day/{day}:
     get:
       summary: Get the users's goals as they existed on a particular day.
-      operationId: getGoalForDayV1
+      operationId: getGoalsForDayV1
       parameters:
         - in: path
           name: userId
@@ -174,15 +222,17 @@ paths:
         '200':
           description: A list of goals.
           schema:
-            $ref: '#/definitions/GoalsResponseV1'
+            $ref: '#/definitions/GoalsForDayResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
+            example: "Descriptive error message"
         '404':
           description: The user either does not exist or you do not have permission to view their goals.
           schema:
             type: string
+            example: "Descriptive error message"
 
 # JWT config for Auth0
 securityDefinitions:
@@ -202,20 +252,66 @@ definitions:
     properties:
       identity:
         $ref: '#/definitions/Identity'
-  HabitsResponseV1:
+  HabitsSummaryResponseV1:
     type: object
     properties:
       habits:
         type: array
         items:
-          type: string
+          type: object
+          properties:
+            date:
+              type: string
+              example: "YYYY-MM-DD"
+            completed:
+              type: integer
+            uncompleted:
+              type: integer
+  HabitsForDayResponseV1:
+    type: object
+    properties:
+      completed:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
+      uncompleted:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
   GoalsResponseV1:
     type: object
     properties:
       goals:
         type: array
         items:
-          type: string
+          $ref: '#/definitions/Goal'
+  GoalsForDayResponseV1:
+    type: object
+    properties:
+      goals:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
+
+  # Requests
+  HabitsForDayRequestV1:
+    type: object
+    properties:
+      completed:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
+      uncompleted:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
+  GoalsRequestV1:
+    type: object
+    properties:
+      goals:
+        type: array
+        items:
+          $ref: '#/definitions/Goal'
 
   # Models (used in request/response types)
   Identity:
@@ -223,3 +319,12 @@ definitions:
     properties:
       userId:
         type: string
+        example: "user-id-123"
+  Goal:
+    type: object
+    properties:
+      title:
+        type: string
+      goalId:
+        type: string
+      
