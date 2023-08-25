@@ -41,7 +41,7 @@ paths:
           type: string
           description: The User ID of the user to lookup.
       x-google-backend:
-        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-summary
         protocol: h2
       security:
         - auth0_jwt: []
@@ -179,7 +179,7 @@ paths:
           schema:
             $ref: '#/definitions/GoalsRequestV1'
       x-google-backend:
-        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals
+        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-post-goals
         protocol: h2
       security:
         - auth0_jwt: []
@@ -188,41 +188,6 @@ paths:
           description: A list of goals.
           schema:
             $ref: '#/definitions/GoalsResponseV1'
-        '401':
-          description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
-          schema:
-            type: string
-            example: "Descriptive error message"
-        '404':
-          description: The user either does not exist or you do not have permission to view their goals.
-          schema:
-            type: string
-            example: "Descriptive error message"
-  /v1/{userId}/goals/day/{day}:
-    get:
-      summary: Get the users's goals as they existed on a particular day.
-      operationId: getGoalsForDayV1
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          type: string
-          description: The User ID of the user to lookup.
-        - in: path
-          name: day
-          required: true
-          type: string
-          description: The day to get the goals on in the format "YYYY-MM-DD"
-      x-google-backend:
-        address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals-for-day
-        protocol: h2
-      security:
-        - auth0_jwt: []
-      responses:
-        '200':
-          description: A list of goals.
-          schema:
-            $ref: '#/definitions/GoalsForDayResponseV1'
         '401':
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:

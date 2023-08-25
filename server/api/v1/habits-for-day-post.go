@@ -9,12 +9,11 @@ import (
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 )
 
-func InitGetHabits() {
-	functions.HTTP("HelloHTTP", HelloHTTP)
+func InitPostHabitsForDay() {
+	functions.HTTP("PostHabitsForDay", PostHabitsForDay)
 }
 
-// HelloHTTP is an HTTP Cloud Function with a request parameter.
-func HelloHTTP(w http.ResponseWriter, r *http.Request) {
+func PostHabitsForDay(w http.ResponseWriter, r *http.Request) {
 	var d struct {
 		Name string `json:"name"`
 	}
