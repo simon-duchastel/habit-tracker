@@ -37,8 +37,7 @@ paths:
         - in: path
           name: userId
           required: true
-          schema:
-            type: string
+          type: string
           description: The User ID of the user to lookup.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits
@@ -66,14 +65,12 @@ paths:
         - in: path
           name: userId
           required: true
-          schema:
-            type: string
+          type: string
           description: The User ID of the user to lookup.
         - in: path
           name: day
           required: true
-          schema:
-            type: string
+          type: string
           description: The day to get the completed habits in the format "YYYY-MM-DD"
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-for-day
@@ -100,14 +97,12 @@ paths:
         - in: path
           name: userId
           required: true
-          schema:
-            type: string
+          type: string
           description: The User ID of the user to lookup.
         - in: path
           name: day
           required: true
-          schema:
-            type: string
+          type: string
           description: The day to get the completed habits in the format "YYYY-MM-DD"
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-post-habits-for-day
@@ -132,11 +127,10 @@ paths:
       summary: Get the user's current goals.
       operationId: getGoalV1
       parameters:
-        - in: body
+        - in: path
           name: userId
           required: true
-          schema:
-            type: string
+          type: string
           description: The User ID of the user to lookup.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals
@@ -161,17 +155,15 @@ paths:
       summary: Get the users's goals as they existed on a particular day.
       operationId: getGoalForDayV1
       parameters:
-        - in: body
+        - in: path
           name: userId
           required: true
-          schema:
-            type: string
+          type: string
           description: The User ID of the user to lookup.
-        - in: body
+        - in: path
           name: day
           required: true
-          schema:
-            type: string
+          type: string
           description: The day to get the goals on in the format "YYYY-MM-DD"
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-goals-for-day
