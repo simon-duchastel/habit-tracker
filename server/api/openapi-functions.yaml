@@ -29,10 +29,10 @@ paths:
           description: The user is not authenticated and cannot make this request (the user should authenticate before retrying). 
           schema:
             type: string
-  /v1/habits/{userId}:
+  /v1/habits/{userId}/summary:
     get:
       summary: Gets how many habits the user has completed each day for up to the last 100 days.
-      operationId: getHabitsV1
+      operationId: getHabitsSummaryV1
       parameters:
         - in: path
           name: userId
