@@ -7,7 +7,7 @@ import (
 )
 
 func TestHabitsForDayRequestV1(t *testing.T) {
-	var requestJson = []byte(`{
+	requestJson := []byte(`{
 		"completed": [
 			{
 				"title": "complete-goal",
@@ -15,7 +15,7 @@ func TestHabitsForDayRequestV1(t *testing.T) {
 			},
 			{
 				"title": "second-complete-goal",
-				goalId": "goal-34"
+				"goalId": "goal-34"
 			}
 		],
 		"uncompleted": [
