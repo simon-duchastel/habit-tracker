@@ -1,22 +1,22 @@
 package models
 
 type WhoAmIResponseV1 struct {
-	identity Identity
+	Identity Identity `json:"identity"`
 }
 
 type HabitsSummaryResponseV1 struct {
-	habits []HabitSummary
+	Habits []HabitSummary `json:"habits"`
 }
 
 type HabitsForDayResponseV1 struct {
-	completed   []Goal
-	uncompleted []Goal
+	Completed   []Goal `json:"completed"`
+	Uncompleted []Goal `json:"uncompleted"`
 }
 
 type GoalsResponseV1 struct {
-	goals []Goal
+	Goals []Goal `json:"goals"`
 }
 
 type GoalsForDayResponseV1 struct {
-	goals []Goal
+	Goals []Goal `json:"goals"`
 }
