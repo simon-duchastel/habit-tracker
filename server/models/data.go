@@ -1,16 +1,16 @@
 package models
 
 type Identity struct {
-	userId string
+	UserId string `json:"UserId"`
 }
 
 type HabitSummary struct {
-	date        string
-	completed   int
-	uncompleted int
+	Date        string `json:"date"`
+	Completed   int    `json:"completed"`
+	Uncompleted int    `json:"uncompleted"`
 }
 
 type Goal struct {
-	title  string
-	goalId string
+	Title  string `json:"title"`
+	GoalId string `json:"goalId"`
 }

@@ -1,10 +1,10 @@
 package models
 
 type HabitsForDayRequestV1 struct {
-	completed   []Goal
-	uncompleted []Goal
+	Completed   []Goal `json:"completed"`
+	Uncompleted []Goal `json:"Uncompleted"`
 }
 
 type GoalsRequestV1 struct {
-	goal []Goal
+	Goal []Goal `json:"goal"`
 }
