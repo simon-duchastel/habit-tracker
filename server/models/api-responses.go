@@ -16,7 +16,3 @@ type HabitsForDayResponseV1 struct {
 type GoalsResponseV1 struct {
 	Goals []Goal `json:"goals"`
 }
-
-type GoalsForDayResponseV1 struct {
-	Goals []Goal `json:"goals"`
-}

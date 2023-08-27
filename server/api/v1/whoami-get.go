@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/simon-duchastel/habit-tracker/server/models"
-	_ "github.com/simon-duchastel/habit-tracker/server/models"
-
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
+
+	"github.com/simon-duchastel/habit-tracker/server/models"
 )
 
 func InitGetWhoAmI() {
