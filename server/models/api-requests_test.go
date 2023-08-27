@@ -10,21 +10,17 @@ func TestHabitsForDayRequestV1(t *testing.T) {
 	requestJson := []byte(`{
 		"completed": [
 			{
-				"title": "complete-goal",
 				"goalId": "goal-12"
 			},
 			{
-				"title": "second-complete-goal",
 				"goalId": "goal-34"
 			}
 		],
 		"uncompleted": [
 			{
-				"title": "incomplete-goal",
 				"goalId": "goal-56"
 			},
 			{
-				"title": "second-incomplete-goal",
 				"goalId": "goal-78"
 			}
 		]
@@ -36,23 +32,19 @@ func TestHabitsForDayRequestV1(t *testing.T) {
 		t.Fatalf("Failed to parse json")
 	}
 	expectedRequest := HabitsForDayRequestV1{
-		Completed: []Goal{
+		Completed: []GoalId{
 			{
-				Title:  "complete-goal",
 				GoalId: "goal-12",
 			},
 			{
-				Title:  "second-complete-goal",
 				GoalId: "goal-34",
 			},
 		},
-		Uncompleted: []Goal{
+		Uncompleted: []GoalId{
 			{
-				Title:  "incomplete-goal",
 				GoalId: "goal-56",
 			},
 			{
-				Title:  "second-incomplete-goal",
 				GoalId: "goal-78",
 			},
 		},

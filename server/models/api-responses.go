@@ -9,8 +9,8 @@ type HabitsSummaryResponseV1 struct {
 }
 
 type HabitsForDayResponseV1 struct {
-	Completed   []Goal `json:"completed"`
-	Uncompleted []Goal `json:"uncompleted"`
+	Completed   []GoalSummary `json:"completed"`
+	Uncompleted []GoalSummary `json:"uncompleted"`
 }
 
 type GoalsResponseV1 struct {
