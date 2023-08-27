@@ -238,19 +238,22 @@ definitions:
       completed:
         type: array
         items:
-          $ref: '#/definitions/Goal'
+          type: object
+          properties:
+            goalId:
+              type: string
+            title:
+              type: string
       uncompleted:
         type: array
         items:
-          $ref: '#/definitions/Goal'
+          type: object
+          properties:
+            goalId:
+              type: string
+            title:
+              type: string
   GoalsResponseV1:
-    type: object
-    properties:
-      goals:
-        type: array
-        items:
-          $ref: '#/definitions/Goal'
-  GoalsForDayResponseV1:
     type: object
     properties:
       goals:
@@ -269,7 +272,12 @@ definitions:
       uncompleted:
         type: array
         items:
-          $ref: '#/definitions/Goal'
+          type: object
+          properties:
+            goalId:
+              type: string
+            title:
+              type: string
   GoalsRequestV1:
     type: object
     properties:
@@ -288,8 +296,26 @@ definitions:
   Goal:
     type: object
     properties:
-      title:
-        type: string
       goalId:
         type: string
+      title:
+        type: string
+      isActive:
+        type: object
+        properties:
+          monday:
+            type: boolean
+          tuesday:
+            type: boolean
+          wednesday:
+            type: boolean
+          thursday:
+            type: boolean
+          friday:
+            type: boolean
+          saturday:
+            type: boolean
+          sunday:
+            type: boolean
+      
       
