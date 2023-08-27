@@ -268,15 +268,16 @@ definitions:
       completed:
         type: array
         items:
-          $ref: '#/definitions/Goal'
+          type: object
+          properties:
+            goalId:
+              type: string
       uncompleted:
         type: array
         items:
           type: object
           properties:
             goalId:
-              type: string
-            title:
               type: string
   GoalsRequestV1:
     type: object
