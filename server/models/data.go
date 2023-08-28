@@ -1,7 +1,7 @@
 package models
 
 type Identity struct {
-	UserId string `json:"UserId"`
+	UserId string `json:"userId"`
 }
 
 type HabitSummary struct {
