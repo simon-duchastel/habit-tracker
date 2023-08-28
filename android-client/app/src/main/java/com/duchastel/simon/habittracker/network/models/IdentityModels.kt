@@ -9,5 +9,5 @@ data class IdentityResponse(
 
 @Keep
 data class Identity(
-    val UserId: String
+    val userId: String
 )
