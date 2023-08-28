@@ -10,7 +10,7 @@ class IdentityRepositoryImpl(
         val response = identityTarget.whoAmI()
         val identityResponse = response.body()
         return if (response.isSuccessful && identityResponse != null) {
-            identityResponse.identity.UserId
+            identityResponse.identity.userId
         } else {
             throw Exception("TODO - handle this gracefully")
         }
