@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,10 +26,8 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.duchastel.simon.habittracker.ui.theme.HabitSummaryCompleteStrong
-import com.duchastel.simon.habittracker.ui.theme.HabitSummaryCompleteWeak
-import com.duchastel.simon.habittracker.ui.theme.HabitSummaryIncompleteStrong
-import com.duchastel.simon.habittracker.ui.theme.HabitSummaryIncompleteWeak
+import com.duchastel.simon.habittracker.ui.theme.HabitColor
+import com.duchastel.simon.habittracker.ui.theme.Typography
 import com.duchastel.simon.habittracker.utils.blendColors
 import com.duchastel.simon.habittracker.viewmodels.SummaryPageViewModel
 import com.duchastel.simon.habittracker.viewmodels.SummaryPageViewModel.*
@@ -36,22 +36,23 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun SummaryPage(viewModel: SummaryPageViewModel = koinViewModel()) {
     val uiState = viewModel.uiState
-    if (uiState.isLoading) {
+    if (uiState.isLoading && uiState.habits.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
     } else {
-        SummaryView(uiState.habits)
+        SummaryView(uiState.isLoading, uiState.habits) { viewModel.loadMoreHabits() }
     }
 }
 
 @Composable
-fun SummaryView(habits: List<HabitListElements>) {
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .wrapContentSize(Alignment.Center),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-
+fun SummaryView(isLoading: Boolean, habits: List<HabitListElements>, onLoadMore: () -> Unit) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(Alignment.Center),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
     ) {
         items(habits) { habitElement ->
             when (habitElement) {
@@ -59,12 +60,33 @@ fun SummaryView(habits: List<HabitListElements>) {
                 is HabitListElements.Week -> HabitSummaryRow(habits = habitElement.habits)
             }
         }
+        item {
+            Row(modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.padding(16.dp))
+                if (isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    LoadMoreButton(onLoadMore)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LoadMoreButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
+        Text("Load more")
     }
 }
 
 @Composable
 fun MonthLabel(text: String) {
-    Text(text)
+    Spacer(modifier = Modifier.padding(8.dp))
+    Text(text, style = Typography.titleLarge)
+    Spacer(modifier = Modifier.padding(8.dp))
 }
 
 @Composable
@@ -97,9 +119,17 @@ fun HabitSummaryBox(
     onClick: () -> Unit,
 ) {
     val color = if (completed) {
-        blendColors(HabitSummaryCompleteWeak, HabitSummaryCompleteStrong, percentage)
+        blendColors(
+            HabitColor.HabitSummaryCompleteWeak,
+            HabitColor.HabitSummaryCompleteStrong,
+            percentage
+        )
     } else {
-        blendColors(HabitSummaryIncompleteStrong, HabitSummaryIncompleteWeak, percentage)
+        blendColors(
+            HabitColor.HabitSummaryIncompleteStrong,
+            HabitColor.HabitSummaryIncompleteWeak,
+            percentage
+        )
     }
 
     Box(modifier = Modifier
@@ -117,6 +147,6 @@ fun EmptyHabitSummaryBox(size: Dp = 40.dp) {
         .size(size)
         .padding(4.dp)
         .clip(RectangleShape)
-        .background(Color.Transparent)
+        .background(HabitColor.HabitSummaryEmpty)
     )
 }

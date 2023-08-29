@@ -27,6 +27,10 @@ class SummaryPageViewModel(
         }
     }
 
+    fun loadMoreHabits() {
+        uiState = uiState.copy(isLoading = true)
+    }
+
     data class UIState(
         val isLoading: Boolean,
         val habits: List<HabitListElements>,
