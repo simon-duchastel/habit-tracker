@@ -5,6 +5,7 @@ import com.duchastel.simon.habittracker.repositories.HabitDaySummary
 import com.duchastel.simon.habittracker.repositories.HabitsRepository
 import com.duchastel.simon.habittracker.utils.parseAsLocalDate
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class HabitsRepositoryImpl(
     private val habitsSummaryTarget: HabitsSummaryTarget,
@@ -25,7 +26,7 @@ class HabitsRepositoryImpl(
 
     private suspend fun fetchAndUpdateCache(userId: UserId, date: LocalDate): HabitDaySummary? {
         val cache = getCaches(userId).habitsByDay
-        val response = habitsSummaryTarget.getHabitsSummary(userId)
+        val response = habitsSummaryTarget.getHabitsSummary(userId, startingFrom = date.format(DateTimeFormatter.ISO_LOCAL_DATE))
         val responseBody = response.body()
         if (response.isSuccessful && responseBody != null) {
             responseBody.habits.forEach {
