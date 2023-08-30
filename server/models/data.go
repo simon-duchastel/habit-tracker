@@ -5,9 +5,9 @@ type Identity struct {
 }
 
 type HabitSummary struct {
-	Date        string `json:"date"`
-	Completed   int    `json:"completed"`
-	Uncompleted int    `json:"uncompleted"`
+	Date        string   `json:"date"`
+	Completed   []string `json:"completed"`
+	Uncompleted []string `json:"uncompleted"`
 }
 
 type Goal struct {
