@@ -49,7 +49,7 @@ paths:
           name: count
           required: false
           type: integer
-          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100.
+          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100. Must be smaller than 366 and larger than 0.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-summary
         protocol: h2
