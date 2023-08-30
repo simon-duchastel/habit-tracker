@@ -10,6 +10,6 @@ data class HabitsSummaryResponse(
 @Keep
 data class HabitSummary(
     val date: String,
-    val completed: Int,
-    val uncompleted: Int,
+    val completed: List<String>,
+    val uncompleted: List<String>,
 )

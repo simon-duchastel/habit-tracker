@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.duchastel.simon.habittracker.repositories.HabitsRepository
 import com.duchastel.simon.habittracker.repositories.IdentityRepository
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class SummaryPageViewModel(
     private val identityRepository: IdentityRepository,
@@ -18,13 +19,25 @@ class SummaryPageViewModel(
 
     init {
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-
-            val userId = identityRepository.userId()
-            val habitsSummary = habitsRepository.getSummary(userId)
-
-            uiState = uiState.copy(isLoading = false, habits = stubData)
+            val currentDate = LocalDate.now()
+            loadHabits(from = currentDate.minusDays(100), to = currentDate)
         }
+    }
+
+    private suspend fun loadHabits(from: LocalDate, to: LocalDate) {
+        check(from.isBefore(to)) { "'from' date must be before 'to' date - $from is not before $to" }
+
+        uiState = uiState.copy(isLoading = true)
+
+        val userId = identityRepository.userId()
+        val dates = mutableListOf(from)
+        while (dates.last().isBefore(to)) {
+            dates += dates.last().plusDays(1)
+        }
+
+        dates.map { habitsRepository.getSummaryForDay(userId, it) }
+
+        uiState = uiState.copy(isLoading = false, habits = stubData)
     }
 
     fun loadMoreHabits() {

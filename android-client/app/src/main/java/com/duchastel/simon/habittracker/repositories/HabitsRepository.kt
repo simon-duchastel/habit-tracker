@@ -1,7 +1,15 @@
 package com.duchastel.simon.habittracker.repositories
 
-import com.duchastel.simon.habittracker.network.models.HabitSummary
+import com.duchastel.simon.habittracker.repositories.impl.UserId
+import java.time.LocalDate
 
 interface HabitsRepository {
-    suspend fun getSummary(userId: String): List<HabitSummary>
+    suspend fun getSummaryForDay(userId: UserId, date: LocalDate): HabitDaySummary?
 }
+
+data class HabitDaySummary(
+    val completed: List<GoalId>,
+    val uncompleted: List<GoalId>,
+)
+
+typealias GoalId = String
