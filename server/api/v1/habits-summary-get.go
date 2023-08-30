@@ -19,23 +19,23 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 	response.Habits = []models.HabitSummary{
 		{
 			Date:        "2023-08-26",
-			Completed:   2,
-			Uncompleted: 3,
+			Completed:   []string{"goal-1", "goal-2"},
+			Uncompleted: []string{"goal-3", "goal-4", "goal-5"},
 		},
 		{
 			Date:        "2023-08-25",
-			Completed:   3,
-			Uncompleted: 3,
+			Completed:   []string{"goal-1", "goal-3"},
+			Uncompleted: []string{"goal-2", "goal-4", "goal-5"},
 		},
 		{
-			Date:        "2023-08-25",
-			Completed:   3,
-			Uncompleted: 3,
+			Date:        "2023-08-24",
+			Completed:   []string{"goal-1", "goal-2", "goal-3"},
+			Uncompleted: []string{"goal-4", "goal-5"},
 		},
 		{
-			Date:        "2023-08-25",
-			Completed:   3,
-			Uncompleted: 3,
+			Date:        "2023-08-23",
+			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
+			Uncompleted: []string{},
 		},
 	}
 

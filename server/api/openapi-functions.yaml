@@ -32,7 +32,7 @@ paths:
             example: "Descriptive error message"
   /v1/{userId}/habits/summary:
     get:
-      summary: Gets how many habits the user has completed each day for up to the last 100 days.
+      summary: Gets how many habits the user has completed each day for some number of days.
       operationId: getHabitsSummaryV1
       parameters:
         - in: path
@@ -40,6 +40,16 @@ paths:
           required: true
           type: string
           description: The User ID of the user to lookup.
+        - in: query
+          name: startingFrom
+          required: false
+          type: string
+          description: The date to start looking up habit summaries and going backwards in time. Must be formatted as YYYY-MM-DD. Defaults to the current day.
+        - in: query
+          name: count
+          required: false
+          type: integer
+          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-summary
         protocol: h2
@@ -229,9 +239,15 @@ definitions:
               type: string
               example: "YYYY-MM-DD"
             completed:
-              type: integer
+              type: array
+              items:
+                type: string
+                description: Goal ID of a goal completed on this day.
             uncompleted:
-              type: integer
+              type: array
+              items:
+                type: string
+                description: Goal ID of a goal not completed on this day.
   HabitsForDayResponseV1:
     type: object
     properties:
@@ -318,5 +334,3 @@ definitions:
             type: boolean
           sunday:
             type: boolean
-      
-      

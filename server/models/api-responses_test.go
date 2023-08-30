@@ -6,19 +6,19 @@ import (
 )
 
 func TestHabitsSummaryResponseV1(t *testing.T) {
-	expectedJson := []byte(`{"habits":[{"date":"2023-08-26","completed":2,"uncompleted":3},{"date":"2023-08-25","completed":3,"uncompleted":3}]}`)
+	expectedJson := []byte(`{"habits":[{"date":"2023-08-26","completed":["goal-1","goal-2"],"uncompleted":["goal-3","goal-4","goal-5"]},{"date":"2023-08-25","completed":["goal-1","goal-2","goal-3"],"uncompleted":["goal-4","goal-5","goal-6"]}]}`)
 
 	var response HabitsSummaryResponseV1
 	response.Habits = []HabitSummary{
 		{
 			Date:        "2023-08-26",
-			Completed:   2,
-			Uncompleted: 3,
+			Completed:   []string{"goal-1", "goal-2"},
+			Uncompleted: []string{"goal-3", "goal-4", "goal-5"},
 		},
 		{
 			Date:        "2023-08-25",
-			Completed:   3,
-			Uncompleted: 3,
+			Completed:   []string{"goal-1", "goal-2", "goal-3"},
+			Uncompleted: []string{"goal-4", "goal-5", "goal-6"},
 		},
 	}
 	json, err := json.Marshal(&response)
