@@ -97,6 +97,7 @@ fun HabitSummaryRow(habits: List<HabitStatus>) {
         val size = (LocalConfiguration.current.screenWidthDp / 8).dp
         habits.forEach { habit ->
             when (habit) {
+                is HabitStatus.Absent -> AbsentHabitSummaryBox(size = size)
                 is HabitStatus.Empty -> EmptyHabitSummaryBox(size = size)
                 is HabitStatus.Complete -> HabitSummaryBox(
                     completed = true,
@@ -148,5 +149,14 @@ fun EmptyHabitSummaryBox(size: Dp = 40.dp) {
         .padding(4.dp)
         .clip(RectangleShape)
         .background(HabitColor.HabitSummaryEmpty)
+    )
+}
+@Composable
+fun AbsentHabitSummaryBox(size: Dp = 40.dp) {
+    Box(modifier = Modifier
+        .size(size)
+        .padding(4.dp)
+        .clip(RectangleShape)
+        .background(Color.Transparent)
     )
 }

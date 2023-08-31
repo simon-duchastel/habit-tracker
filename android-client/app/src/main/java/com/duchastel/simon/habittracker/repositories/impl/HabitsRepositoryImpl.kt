@@ -17,8 +17,7 @@ class HabitsRepositoryImpl(
 
     override suspend fun getSummaryForDay(userId: UserId, date: LocalDate): HabitDaySummary? {
         val cache = getCaches(userId).habitsByDay
-        val cachedValue = cache[date]
-        if (cachedValue != null) return cachedValue
+        if (cache.containsKey(date)) return cache[date]
 
         fetchAndUpdateCache(userId, date)
         return cache[date]
@@ -45,4 +44,4 @@ class HabitsRepositoryImpl(
     )
 }
 
-typealias HabitsByDayCache = MutableMap<LocalDate, HabitDaySummary>
+typealias HabitsByDayCache = MutableMap<LocalDate, HabitDaySummary?>
