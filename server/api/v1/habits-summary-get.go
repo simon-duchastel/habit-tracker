@@ -37,6 +37,41 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
 			Uncompleted: []string{},
 		},
+		{
+			Date:        "2023-08-22",
+			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
+			Uncompleted: []string{},
+		},
+		{
+			Date:        "2023-08-21",
+			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
+			Uncompleted: []string{},
+		},
+		{
+			Date:        "2023-08-05",
+			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
+			Uncompleted: []string{"goal-6", "goal-7"},
+		},
+		{
+			Date:        "2023-08-04",
+			Completed:   []string{},
+			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
+		},
+		{
+			Date:        "2023-08-03",
+			Completed:   []string{},
+			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
+		},
+		{
+			Date:        "2023-08-02",
+			Completed:   []string{},
+			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
+		},
+		{
+			Date:        "2023-08-01",
+			Completed:   []string{},
+			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
+		},
 	}
 
 	data, err := json.Marshal(&response)

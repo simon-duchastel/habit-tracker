@@ -13,8 +13,10 @@ produces:
 paths:
   /v1/whoami:
     get:
-      summary: Gets the identity of the current user.
+      summary: (DRAFT) Gets the identity of the current user.
       operationId: getWhoAmIV1
+      tags:
+        - Identity
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-whoami
         protocol: h2
@@ -32,8 +34,10 @@ paths:
             example: "Descriptive error message"
   /v1/{userId}/habits/summary:
     get:
-      summary: Gets how many habits the user has completed each day for some number of days.
+      summary: (DRAFT) Gets how many habits the user has completed each day for some number of days.
       operationId: getHabitsSummaryV1
+      tags:
+        - Habits
       parameters:
         - in: path
           name: userId
@@ -49,7 +53,7 @@ paths:
           name: count
           required: false
           type: integer
-          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100. Must be smaller than 366 and larger than 0.
+          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-summary
         protocol: h2
@@ -72,8 +76,10 @@ paths:
             example: "Descriptive error message"
   /v1/{userId}/habits/day/{day}:
     get:
-      summary: Get the habits the user has completed on a particular day.
+      summary: (DRAFT) Get the habits the user has completed on a particular day.
       operationId: getHabitsForDayV1
+      tags:
+        - Habits
       parameters:
         - in: path
           name: userId
@@ -106,8 +112,10 @@ paths:
             type: string
             example: "Descriptive error message"
     post:
-      summary: Post that the user has completed a habit for a particular day.
+      summary: (DRAFT) Post that the user has completed a habit for a particular day.
       operationId: postHabitsForDayV1
+      tags:
+        - Habits
       parameters:
         - in: path
           name: userId
@@ -146,8 +154,10 @@ paths:
             example: "Descriptive error message"
   /v1/{userId}/goals:
     get:
-      summary: Get the user's current goals.
+      summary: (DRAFT) Get the user's current goals.
       operationId: getGoalsV1
+      tags:
+        - Goals
       parameters:
         - in: path
           name: userId
@@ -175,8 +185,10 @@ paths:
             type: string
             example: "Descriptive error message"
     post:
-      summary: Modify the user's current goals.
+      summary: (DRAFT) Modify the user's current goals.
       operationId: postGoalsV1
+      tags:
+        - Goals
       parameters:
         - in: path
           name: userId
