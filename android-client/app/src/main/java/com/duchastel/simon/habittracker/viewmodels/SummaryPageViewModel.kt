@@ -9,12 +9,11 @@ import com.duchastel.simon.habittracker.repositories.HabitsRepository
 import com.duchastel.simon.habittracker.repositories.IdentityRepository
 import com.duchastel.simon.habittracker.repositories.impl.UserId
 import com.duchastel.simon.habittracker.utils.asString
+import com.duchastel.simon.habittracker.utils.firstDayInWeek
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.Month
-import java.time.format.DateTimeFormatter
 import java.time.temporal.WeekFields
-import java.util.Locale
 
 class SummaryPageViewModel(
     private val identityRepository: IdentityRepository,
@@ -36,16 +35,38 @@ class SummaryPageViewModel(
 
         val userId = identityRepository.userId()
 
-        val currentMonth = from.month
+        var currentMonth = from.month
         val firstMonthLabel = HabitListElements.MonthLabel(currentMonth.asString())
-        val restOfStatuses = (0L until numWeeks).map {
+        val restOfStatuses = (0L until numWeeks).flatMap {
             val day = from.minusWeeks(it)
-            val weekList = loadWeek(
-                day,
-                currentMonth,
-                userId,
-            )
-            HabitListElements.Week(weekList)
+            val firstDayInWeek = day.firstDayInWeek(weekFields)
+
+            if (firstDayInWeek.month != currentMonth) {
+                val firstWeekList = loadWeek(
+                    day,
+                    currentMonth,
+                    userId,
+                )
+                currentMonth = firstDayInWeek.month
+                val secondWeekList = loadWeek(
+                    day,
+                    currentMonth,
+                    userId,
+                )
+
+                listOf(
+                    HabitListElements.Week(firstWeekList),
+                    HabitListElements.MonthLabel(currentMonth.asString()),
+                    HabitListElements.Week(secondWeekList),
+                )
+            } else {
+                val weekList = loadWeek(
+                    day,
+                    currentMonth,
+                    userId,
+                )
+                listOf(HabitListElements.Week(weekList))
+            }
         }
 
         val fullList = listOf(firstMonthLabel) + restOfStatuses
@@ -57,7 +78,7 @@ class SummaryPageViewModel(
         currentMonth: Month,
         userId: UserId,
     ): List<HabitStatus> {
-        val startOfWeek = from.minusWeeks(1).with(weekFields.firstDayOfWeek)
+        val startOfWeek = from.firstDayInWeek(weekFields)
 println("TODO START OF WEEK: $startOfWeek (${startOfWeek.dayOfWeek})")
         return (0L..6L).map {
             val day = startOfWeek.plusDays(it)
