@@ -67,13 +67,13 @@ func GetGoalsActiveInRange(
 			return nil, err
 		}
 
-		log.LogInfo(fmt.Sprintf("Data: %v", doc.Data()))
+		log.LogInfo(fmt.Sprintf("Received: %v", doc.Data()))
 
 		// parse the start date and skip goals that start after our range
 		var startDate time.Time
 		var ok bool
 		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); !ok {
-			errString := fmt.Sprintf("Received error parsing 'startDate': %v", err)
+			errString := fmt.Sprintf("Received error parsing 'startDate' from data: received %v", doc.Data())
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
@@ -87,17 +87,17 @@ func GetGoalsActiveInRange(
 		var goalId string
 		var endDate *time.Time = nil
 		if activeOn, ok = doc.Data()[goalsKeyActiveOn].([]bool); !ok {
-			errString := fmt.Sprintf("Received error parsing 'activeOn': %v", err)
+			errString := fmt.Sprintf("Received error parsing 'activeOn' from data: received %v", doc.Data())
 			log.LogError(errString)
 			return nil, errors.New("")
 		}
 		if title, ok = doc.Data()[goalsKeyTitle].(string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'title': %v", err)
+			errString := fmt.Sprintf("Received error parsing 'title' from data: received %v", doc.Data())
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
 		if goalId, ok = doc.Data()[goalsKeyGoalId].(string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'goalId': %v", err)
+			errString := fmt.Sprintf("Received error parsing 'goalId' from data: received %v", doc.Data())
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
@@ -108,7 +108,7 @@ func GetGoalsActiveInRange(
 			// Otherwise, leave the default value of nil
 			var endDateRef time.Time
 			if endDateRef, ok = endDateRaw.(time.Time); !ok {
-				errString := fmt.Sprintf("Received error parsing 'endDate': %v", err)
+				errString := fmt.Sprintf("Received error parsing 'endDate' from data: received %v", doc.Data())
 				log.LogError(errString)
 				return nil, errors.New(errString)
 			} else {
