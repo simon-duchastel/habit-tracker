@@ -4,17 +4,73 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"time"
 
+	"cloud.google.com/go/firestore"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 
+	"github.com/simon-duchastel/habit-tracker/server/database"
 	"github.com/simon-duchastel/habit-tracker/server/models"
 )
+
+const defaultCount = 20
+const userIdParam = "userId"
+const countParam = "count"
+const startingFromParam = "startingFrom"
 
 func InitGetHabitsSummary() {
 	functions.HTTP("GetHabitsSummary", GetHabitsSummary)
 }
 
 func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
+	context := r.Context()
+	var dbClient *firestore.Client
+	var err error
+	if dbClient, err = database.GetOrCreateDbClient(context); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error connecting to database")
+		return
+	}
+
+	userId := r.URL.Query().Get(userIdParam)
+	if !r.URL.Query().Has(userIdParam) || userId == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error retreiving user id from path")
+		return
+	}
+
+	var countString = r.URL.Query().Get(countParam)
+	var count int = defaultCount
+	if r.URL.Query().Has(countParam) {
+		var err error
+		if count, err = strconv.Atoi(countString); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "'count' param must be an integer greater than 0: %v is invalid", countString)
+			return
+		}
+	}
+
+	startingFromString := r.URL.Query().Get(startingFromParam)
+	var startingFrom time.Time = time.Now()
+	if r.URL.Query().Has(startingFromParam) {
+		var err error
+		if startingFrom, err = time.Parse(startingFromString, time.DateOnly); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "'startingFrom' param must be a valid date of the form YYYY-MM-DD: %v is invalid", startingFromString)
+			return
+		}
+	}
+
+	until := startingFrom.AddDate(0, 0, -1*count)
+	if habitRange, err := database.GetHabitRange(context, dbClient, startingFrom, until); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "'startingFrom' param must be a valid date of the form YYYY-MM-DD: %v is invalid", startingFromString)
+		return
+	} else {
+
+	}
+
 	response := models.HabitsSummaryResponseV1{}
 	response.Habits = []models.HabitSummary{
 		{
