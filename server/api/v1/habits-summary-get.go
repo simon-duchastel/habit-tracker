@@ -17,6 +17,8 @@ import (
 )
 
 const defaultCount = 20
+const minCount = 1
+const maxCount = 200
 const userIdParam = "userId"
 const countParam = "count"
 const startingFromParam = "startingFrom"
@@ -52,9 +54,24 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 		var err error
 		if count, err = strconv.Atoi(countString); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "'count' param must be an integer greater than 0: %v is invalid", countString)
+			fmt.Fprintf(w,
+				"'count' param must be an integer greater than %v and smaller than %v: %v is invalid",
+				minCount-1,
+				maxCount,
+				countString,
+			)
 			return
 		}
+	}
+	if count < minCount || count > maxCount {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w,
+			"'count' param must be an integer greater than %v and smaller than %v: %v is invalid",
+			minCount-1,
+			maxCount+1,
+			countString,
+		)
+		return
 	}
 
 	// get startingFrom from request, or default to the current day
