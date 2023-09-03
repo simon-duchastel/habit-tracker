@@ -28,11 +28,12 @@ func GetHabitRange(
 	end time.Time,
 ) ([]HabitDay, error) {
 
+	// Check that the start <= habit.date <= end
 	iter := client.Collection(habitsCollection).
 		Where(habitsKeyUser, "==", userId).
 		Where(habitsKeySchemaVersion, "==", "v1").
-		Where(habitsKeyDate, "<=", start).
-		Where(habitsKeyDate, ">=", end).
+		Where(habitsKeyDate, ">=", start).
+		Where(habitsKeyDate, "<=", end).
 		Documents(ctx)
 
 	var days = []HabitDay{}

@@ -59,10 +59,10 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 
 	// get startingFrom from request, or default to the current day
 	startingFromString := r.URL.Query().Get(startingFromParam)
-	var startingFrom time.Time = time.Now().UTC()
+	var endOfRange time.Time = time.Now().UTC()
 	if r.URL.Query().Has(startingFromParam) {
 		var err error
-		if startingFrom, err = time.Parse(time.DateOnly, startingFromString); err != nil {
+		if endOfRange, err = time.Parse(time.DateOnly, startingFromString); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "'startingFrom' param must be a valid date of the form YYYY-MM-DD: %v is invalid", startingFromString)
 			return
@@ -70,9 +70,9 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get all habits in the requested range
-	until := startingFrom.AddDate(0, 0, -1*count)
+	beginningOfRange := endOfRange.AddDate(0, 0, -1*count)
 	var habitRange []database.HabitDay
-	if habitRange, err = database.GetHabitRange(context, dbClient, userId, startingFrom, until); err != nil {
+	if habitRange, err = database.GetHabitRange(context, dbClient, userId, beginningOfRange, endOfRange); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Error connecting to database while retrieving habits")
 		return
@@ -80,16 +80,16 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 
 	// get all goals active in the requested range
 	var goalRange []database.Goal
-	if goalRange, err = database.GetGoalsActiveInRange(context, dbClient, userId, until, startingFrom); err != nil {
+	if goalRange, err = database.GetGoalsActiveInRange(context, dbClient, userId, beginningOfRange, endOfRange); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Error connecting to database while retrieving goals")
 		return
 	}
 
-	// iterate through all days in the range we're returning (from back to front), accumulating
+	// iterate through all days in the range we're returning, accumulating
 	// all the days to return
 	summaries := []models.HabitSummary{}
-	for day := startingFrom; day.After(until); day = day.AddDate(0, 0, -1) {
+	for day := beginningOfRange; day.Before(endOfRange); day = day.AddDate(0, 0, 1) {
 		var dayBefore = day.AddDate(0, 0, -1)
 
 		// get the indexes for the habit day summaries we fetched from the database

@@ -30,20 +30,26 @@ func GetGoalsActiveInRange(
 	end time.Time,
 ) ([]Goal, error) {
 
+	// this query should check that goal.endDate >= end && goal.startDate <= start
+	// however, due to performance limitations in the database (firestore), we can
+	// only check 1 field. We choose to check goal.endDate and filter out goals
+	// that weren't yet started in the client code
 	iter := client.Collection(goalsCollection).
 		Where(goalsKeyUser, "==", userId).
 		Where(goalsKeySchemaVersion, "==", "v1").
-		Where(goalsKeyStartDate, ">=", start).
 		WhereEntity(firestore.OrFilter{
 			Filters: []firestore.EntityFilter{
+				// if the end date is nil, we know the goal's end date must come after
+				// 'end' because it's still active now
 				firestore.PropertyFilter{
 					Path:     goalsKeyEndDate,
 					Operator: "==",
 					Value:    nil,
 				},
+				// the goal's end date must come after 'end'
 				firestore.PropertyFilter{
 					Path:     goalsKeyEndDate,
-					Operator: "<=",
+					Operator: ">=",
 					Value:    end,
 				},
 			},
@@ -61,12 +67,23 @@ func GetGoalsActiveInRange(
 			return nil, err
 		}
 
+		// parse the start date and skip goals that start after our range
+		var startDate time.Time
+		var ok bool
+		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); ok {
+			errString := fmt.Sprintf("Received error parsing 'startDate': %v", err)
+			log.LogError(errString)
+			return nil, errors.New(errString)
+		}
+		if startDate.After(end) {
+			continue // this goal's start date is after the end of our range - skip it
+		}
+
+		// parse remaining fields
 		var activeOn []bool
 		var title string
 		var goalId string
-		var startDate time.Time
 		var endDate *time.Time = nil
-		var ok bool
 		if activeOn, ok = doc.Data()[goalsKeyActiveOn].([]bool); ok {
 			errString := fmt.Sprintf("Received error parsing 'activeOn': %v", err)
 			log.LogError(errString)
@@ -79,11 +96,6 @@ func GetGoalsActiveInRange(
 		}
 		if goalId, ok = doc.Data()[goalsKeyGoalId].(string); ok {
 			errString := fmt.Sprintf("Received error parsing 'goalId': %v", err)
-			log.LogError(errString)
-			return nil, errors.New(errString)
-		}
-		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); ok {
-			errString := fmt.Sprintf("Received error parsing 'startDate': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
