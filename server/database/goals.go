@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -49,8 +48,8 @@ func GetGoalsActiveInRange(
 				// the goal's end date must come after 'end'
 				firestore.PropertyFilter{
 					Path:     goalsKeyEndDate,
-					Operator: ">=",
-					Value:    end,
+					Operator: ">",
+					Value:    end.AddDate(0, 0, -1), // subtract one to make the check inclusive
 				},
 			},
 		}).
@@ -67,64 +66,38 @@ func GetGoalsActiveInRange(
 			return nil, err
 		}
 
-		log.LogInfo(fmt.Sprintf("Received: %v", doc.Data()))
-
-		// parse the start date and skip goals that start after our range
-		var startDate time.Time
-		var ok bool
-		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); !ok {
-			errString := fmt.Sprintf("Received error parsing 'startDate' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New(errString)
+		// parse the database entry
+		var dbEntry dbGoal
+		if err = doc.DataTo(&dbEntry); err != nil {
+			log.LogError(fmt.Sprintf("Received error parsing goal entry from database: %v", err))
+			return nil, err
 		}
-		if startDate.After(end) {
+
+		// skip goals where the start time is after the end of our range
+		// the query already took care of ommitting goals that end before the start of our range)
+		if dbEntry.StartDate.After(end) {
 			continue // this goal's start date is after the end of our range - skip it
 		}
 
-		// parse remaining fields
-		var activeOn []bool
-		var title string
-		var goalId string
-		var endDate *time.Time = nil
-		if activeOn, ok = doc.Data()[goalsKeyActiveOn].([]bool); !ok {
-			errString := fmt.Sprintf("Received error parsing 'activeOn' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New("")
-		}
-		if title, ok = doc.Data()[goalsKeyTitle].(string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'title' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New(errString)
-		}
-		if goalId, ok = doc.Data()[goalsKeyGoalId].(string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'goalId' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New(errString)
-		}
-		var endDateRaw interface{}
-		endDateRaw, ok = doc.Data()[goalsKeyEndDate]
-		if ok {
-			// if it exists, check its type and assign it to endDay.
-			// Otherwise, leave the default value of nil
-			var endDateRef time.Time
-			if endDateRef, ok = endDateRaw.(time.Time); !ok {
-				errString := fmt.Sprintf("Received error parsing 'endDate' from data: received %v", doc.Data())
-				log.LogError(errString)
-				return nil, errors.New(errString)
-			} else {
-				endDate = &endDateRef
-			}
-		}
-
 		goals = append(goals, Goal{
-			ActiveOn:  activeOn,
-			Title:     title,
-			GoalId:    goalId,
-			StartDate: startDate,
-			EndDate:   endDate,
+			ActiveOn:  dbEntry.ActiveOn,
+			Title:     dbEntry.Title,
+			GoalId:    dbEntry.GoalId,
+			StartDate: dbEntry.StartDate,
+			EndDate:   dbEntry.EndDate,
 		})
 	}
 	return goals, nil
+}
+
+type dbGoal struct {
+	StartDate     time.Time  `firestore:"startDate,omitempty"`
+	EndDate       *time.Time `firestore:"endDate,omitempty"`
+	GoalId        string     `firestore:"goalId,omitempty"`
+	Title         string     `firestore:"title,omitempty"`
+	ActiveOn      []bool     `firestore:"activeOn,omitempty"`
+	SchemaVersion string     `firestore:"schemaVersion,omitempty"`
+	UserId        string     `firestore:"userId,omitempty"`
 }
 
 type Goal struct {

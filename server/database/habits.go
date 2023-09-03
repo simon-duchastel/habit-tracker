@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -32,8 +31,8 @@ func GetHabitRange(
 	iter := client.Collection(habitsCollection).
 		Where(habitsKeyUser, "==", userId).
 		Where(habitsKeySchemaVersion, "==", "v1").
-		Where(habitsKeyDate, ">=", start).
-		Where(habitsKeyDate, "<=", end).
+		Where(habitsKeyDate, ">", start.AddDate(0, 0, -1)). // subtract one to make the check inclusive
+		Where(habitsKeyDate, "<", end.AddDate(0, 0, 1)).    // add 1 to make the check inclusive
 		Documents(ctx)
 
 	var days = []HabitDay{}
@@ -47,34 +46,27 @@ func GetHabitRange(
 			return nil, err
 		}
 
-		log.LogInfo(fmt.Sprintf("Data: %v", doc.Data()))
-
-		var day time.Time
-		var completed []string
-		var uncompleted []string
-		var ok bool
-		if day, ok = doc.Data()[habitsKeyDate].(time.Time); !ok {
-			errString := fmt.Sprintf("Received error parsing 'date' from data: received %v", doc.Data())
-			return nil, errors.New(errString)
-		}
-		if completed, ok = doc.Data()[habitsKeyCompleted].([]string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'completed' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New(errString)
-		}
-		if uncompleted, ok = doc.Data()[habitsKeyUncompleted].([]string); !ok {
-			errString := fmt.Sprintf("Received error parsing 'uncompleted' from data: received %v", doc.Data())
-			log.LogError(errString)
-			return nil, errors.New(errString)
+		var dbEntry dbHabit
+		if err = doc.DataTo(&dbEntry); err != nil {
+			log.LogError(fmt.Sprintf("Received error parsing habit entry from database: %v", err))
+			return nil, err
 		}
 
 		days = append(days, HabitDay{
-			Day:         day,
-			Completed:   completed,
-			Uncompleted: uncompleted,
+			Day:         dbEntry.Date,
+			Completed:   dbEntry.Completed,
+			Uncompleted: dbEntry.Uncompleted,
 		})
 	}
 	return days, nil
+}
+
+type dbHabit struct {
+	Date          time.Time `firestore:"date,omitempty"`
+	Completed     []string  `firestore:"completed,omitempty"`
+	Uncompleted   []string  `firestore:"uncompleted,omitempty"`
+	SchemaVersion string    `firestore:"schemaVersion,omitempty"`
+	UserId        string    `firestore:"userId,omitempty"`
 }
 
 type HabitDay struct {
