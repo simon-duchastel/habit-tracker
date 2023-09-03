@@ -3,10 +3,13 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+
+	log "github.com/simon-duchastel/habit-tracker/server/utils"
 )
 
 const habitsCollection = "habits"
@@ -39,6 +42,7 @@ func GetHabitRange(
 			break
 		}
 		if err != nil {
+			log.LogError(fmt.Sprintf("Received error habit goal: %v", err))
 			return nil, err
 		}
 
@@ -47,13 +51,18 @@ func GetHabitRange(
 		var uncompleted []string
 		var ok bool
 		if day, ok = doc.Data()[habitsKeyDate].(time.Time); ok {
-			return nil, errors.New("")
+			errString := fmt.Sprintf("Received error parsing 'date': %v", err)
+			return nil, errors.New(errString)
 		}
 		if completed, ok = doc.Data()[habitsKeyCompleted].([]string); ok {
-			return nil, errors.New("")
+			errString := fmt.Sprintf("Received error parsing 'completed': %v", err)
+			log.LogError(errString)
+			return nil, errors.New(errString)
 		}
 		if uncompleted, ok = doc.Data()[habitsKeyUncompleted].([]string); ok {
-			return nil, errors.New("")
+			errString := fmt.Sprintf("Received error parsing 'uncompleted': %v", err)
+			log.LogError(errString)
+			return nil, errors.New(errString)
 		}
 
 		days = append(days, HabitDay{
