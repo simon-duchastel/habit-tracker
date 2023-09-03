@@ -34,11 +34,11 @@ func GetGoalsActiveInRange(
 		Where(goalsKeyUser, "==", userId).
 		Where(goalsKeySchemaVersion, "==", "v1").
 		Where(goalsKeyStartDate, ">=", start).
-		WhereEntity(firestore.AndFilter{
+		WhereEntity(firestore.OrFilter{
 			Filters: []firestore.EntityFilter{
 				firestore.PropertyFilter{
 					Path:     goalsKeyEndDate,
-					Operator: "!=",
+					Operator: "==",
 					Value:    nil,
 				},
 				firestore.PropertyFilter{
