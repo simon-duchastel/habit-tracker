@@ -250,6 +250,8 @@ definitions:
             date:
               type: string
               example: "YYYY-MM-DD"
+            missedHabit:
+              type: boolean
             completed:
               type: array
               items:
