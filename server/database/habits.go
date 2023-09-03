@@ -42,7 +42,7 @@ func GetHabitRange(
 			break
 		}
 		if err != nil {
-			log.LogError(fmt.Sprintf("Received error habit goal: %v", err))
+			log.LogError(fmt.Sprintf("Received error retrieving habit: %v", err))
 			return nil, err
 		}
 
