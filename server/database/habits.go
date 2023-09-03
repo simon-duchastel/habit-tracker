@@ -47,20 +47,22 @@ func GetHabitRange(
 			return nil, err
 		}
 
+		log.LogInfo(fmt.Sprintf("Data: %v", doc.Data()))
+
 		var day time.Time
 		var completed []string
 		var uncompleted []string
 		var ok bool
-		if day, ok = doc.Data()[habitsKeyDate].(time.Time); ok {
+		if day, ok = doc.Data()[habitsKeyDate].(time.Time); !ok {
 			errString := fmt.Sprintf("Received error parsing 'date': %v", err)
 			return nil, errors.New(errString)
 		}
-		if completed, ok = doc.Data()[habitsKeyCompleted].([]string); ok {
+		if completed, ok = doc.Data()[habitsKeyCompleted].([]string); !ok {
 			errString := fmt.Sprintf("Received error parsing 'completed': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
-		if uncompleted, ok = doc.Data()[habitsKeyUncompleted].([]string); ok {
+		if uncompleted, ok = doc.Data()[habitsKeyUncompleted].([]string); !ok {
 			errString := fmt.Sprintf("Received error parsing 'uncompleted': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)

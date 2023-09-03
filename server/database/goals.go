@@ -67,10 +67,12 @@ func GetGoalsActiveInRange(
 			return nil, err
 		}
 
+		log.LogInfo(fmt.Sprintf("Data: %v", doc.Data()))
+
 		// parse the start date and skip goals that start after our range
 		var startDate time.Time
 		var ok bool
-		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); ok {
+		if startDate, ok = doc.Data()[goalsKeyStartDate].(time.Time); !ok {
 			errString := fmt.Sprintf("Received error parsing 'startDate': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)
@@ -84,17 +86,17 @@ func GetGoalsActiveInRange(
 		var title string
 		var goalId string
 		var endDate *time.Time = nil
-		if activeOn, ok = doc.Data()[goalsKeyActiveOn].([]bool); ok {
+		if activeOn, ok = doc.Data()[goalsKeyActiveOn].([]bool); !ok {
 			errString := fmt.Sprintf("Received error parsing 'activeOn': %v", err)
 			log.LogError(errString)
 			return nil, errors.New("")
 		}
-		if title, ok = doc.Data()[goalsKeyTitle].(string); ok {
+		if title, ok = doc.Data()[goalsKeyTitle].(string); !ok {
 			errString := fmt.Sprintf("Received error parsing 'title': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)
 		}
-		if goalId, ok = doc.Data()[goalsKeyGoalId].(string); ok {
+		if goalId, ok = doc.Data()[goalsKeyGoalId].(string); !ok {
 			errString := fmt.Sprintf("Received error parsing 'goalId': %v", err)
 			log.LogError(errString)
 			return nil, errors.New(errString)
@@ -105,7 +107,7 @@ func GetGoalsActiveInRange(
 			// if it exists, check its type and assign it to endDay.
 			// Otherwise, leave the default value of nil
 			var endDateRef time.Time
-			if endDateRef, ok = endDateRaw.(time.Time); ok {
+			if endDateRef, ok = endDateRaw.(time.Time); !ok {
 				errString := fmt.Sprintf("Received error parsing 'endDate': %v", err)
 				log.LogError(errString)
 				return nil, errors.New(errString)
