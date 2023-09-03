@@ -15,9 +15,18 @@ const habitsKeySchemaVersion = "schemaVersion"
 const habitsKeyDate = "date"
 const habitsKeyCompleted = "completed"
 const habitsKeyUncompleted = "uncompleted"
+const habitsKeyUser = "userId"
 
-func GetHabitRange(ctx context.Context, client *firestore.Client, start time.Time, end time.Time) ([]HabitDay, error) {
+func GetHabitRange(
+	ctx context.Context,
+	client *firestore.Client,
+	userId string,
+	start time.Time,
+	end time.Time,
+) ([]HabitDay, error) {
+
 	iter := client.Collection(habitsCollection).
+		Where(habitsKeyUser, "==", userId).
 		Where(habitsKeySchemaVersion, "==", "v1").
 		Where(habitsKeyDate, "<=", start).
 		Where(habitsKeyDate, ">=", end).

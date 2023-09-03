@@ -6,20 +6,12 @@ import (
 	"cloud.google.com/go/firestore"
 )
 
-var dbClient *firestore.Client
-
 const projectId = "simon-duchastel-habit-tracker"
 
-func GetOrCreateDbClient(ctx context.Context) (*firestore.Client, error) {
-	if dbClient != nil {
-		return dbClient, nil
-	}
-
+func GetDbClient(ctx context.Context) (*firestore.Client, error) {
 	newClient, err := firestore.NewClient(ctx, projectId)
 	if err != nil {
 		return nil, err
-	} else {
-		dbClient = newClient
-		return newClient, nil
 	}
+	return newClient, nil
 }

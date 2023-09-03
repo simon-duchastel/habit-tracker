@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"golang.org/x/exp/slices"
+
 	"cloud.google.com/go/firestore"
 	"github.com/GoogleCloudPlatform/functions-framework-go/functions"
 
@@ -24,15 +26,18 @@ func InitGetHabitsSummary() {
 }
 
 func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
+	// setup database
 	context := r.Context()
 	var dbClient *firestore.Client
 	var err error
-	if dbClient, err = database.GetOrCreateDbClient(context); err != nil {
+	if dbClient, err = database.GetDbClient(context); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error connecting to database")
 		return
 	}
+	defer dbClient.Close()
 
+	// get userId from request
 	userId := r.URL.Query().Get(userIdParam)
 	if !r.URL.Query().Has(userIdParam) || userId == "" {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -40,6 +45,7 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get count from request, or default to 20
 	var countString = r.URL.Query().Get(countParam)
 	var count int = defaultCount
 	if r.URL.Query().Has(countParam) {
@@ -51,8 +57,9 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// get startingFrom from request, or default to the current day
 	startingFromString := r.URL.Query().Get(startingFromParam)
-	var startingFrom time.Time = time.Now()
+	var startingFrom time.Time = time.Now().UTC()
 	if r.URL.Query().Has(startingFromParam) {
 		var err error
 		if startingFrom, err = time.Parse(startingFromString, time.DateOnly); err != nil {
@@ -62,175 +69,100 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// get all habits in the requested range
 	until := startingFrom.AddDate(0, 0, -1*count)
-	if habitRange, err := database.GetHabitRange(context, dbClient, startingFrom, until); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "'startingFrom' param must be a valid date of the form YYYY-MM-DD: %v is invalid", startingFromString)
+	var habitRange []database.HabitDay
+	if habitRange, err = database.GetHabitRange(context, dbClient, userId, startingFrom, until); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error connecting to database while retrieving habits")
 		return
-	} else {
-
 	}
 
+	// get all goals active in the requested range
+	var goalRange []database.Goal
+	if goalRange, err = database.GetGoalsActiveInRange(context, dbClient, userId, until, startingFrom); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Error connecting to database while retrieving goals")
+		return
+	}
+
+	// iterate through all days in the range we're returning (from back to front), accumulating
+	// all the days to return
+	summaries := []models.HabitSummary{}
+	for day := startingFrom; day.After(until); day = day.AddDate(0, 0, -1) {
+		var dayBefore = day.AddDate(0, 0, -1)
+
+		// get the indexes for the habit day summaries we fetched from the database
+		currentDayIndex := slices.IndexFunc(habitRange, func(d database.HabitDay) bool {
+			return d.Day.Year() == day.Year() && d.Day.Month() == day.Month() && d.Day.Day() == day.Day()
+		})
+		dayBeforeIndex := slices.IndexFunc(habitRange, func(d database.HabitDay) bool {
+			return d.Day.Year() == dayBefore.Year() && d.Day.Month() == dayBefore.Month() && d.Day.Day() == dayBefore.Day()
+		})
+
+		// get the habit day for this day and the previous day, or default to nil if the database doesn't have them
+		var habitDay *database.HabitDay = nil
+		var habitDayBefore *database.HabitDay = nil
+		if currentDayIndex > -1 {
+			habitDay = &habitRange[dayBeforeIndex]
+		}
+		if dayBeforeIndex > -1 {
+			habitDayBefore = &habitRange[dayBeforeIndex]
+		}
+
+		// get the goals active for this day
+		var currentGoalsActive []database.Goal
+		var dayBeforeGoalsActive []database.Goal
+		for i := range goalRange {
+			startsBefore := goalRange[i].StartDate.AddDate(0, 0, -1).Before(day)
+			endsAfter := goalRange[i].EndDate == nil || goalRange[i].EndDate.After(day)
+			isActiveOnDay := goalRange[i].ActiveOn[day.Weekday()]
+
+			if startsBefore && endsAfter && isActiveOnDay {
+				currentGoalsActive = append(currentGoalsActive, goalRange[i])
+			}
+		}
+		for i := range goalRange {
+			startsBefore := goalRange[i].StartDate.AddDate(0, 0, -1).Before(dayBefore)
+			endsAfter := goalRange[i].EndDate == nil || goalRange[i].EndDate.After(dayBefore)
+			isActiveOnDay := goalRange[i].ActiveOn[dayBefore.Weekday()]
+
+			if startsBefore && endsAfter && isActiveOnDay {
+				dayBeforeGoalsActive = append(dayBeforeGoalsActive, goalRange[i])
+			}
+		}
+
+		// calculate whether we missed our habit today
+		var habitMissed bool
+		if habitDayBefore == nil {
+
+		}
+
+		habitSummary := models.HabitSummary{}
+		habitSummary.Date = day.Format(time.DateOnly)
+		habitSummary.MissedHabit = habitMissed
+		if habitDay == nil {
+			// handle empty case (db has no record of this day, so no goals were completed)
+			habitSummary.Completed = []string{}
+			habitSummary.Uncompleted = []string{}
+			for i := range currentGoalsActive {
+				habitSummary.Uncompleted = append(habitSummary.Uncompleted, currentGoalsActive[i].GoalId)
+			}
+		} else {
+			habitSummary.Completed = habitDay.Completed
+			habitSummary.Uncompleted = []string{}
+			for i := range currentGoalsActive {
+				if !slices.Contains(habitDay.Completed, currentGoalsActive[i].GoalId) {
+					habitSummary.Uncompleted = append(habitSummary.Uncompleted, currentGoalsActive[i].GoalId)
+				}
+			}
+		}
+		summaries = append(summaries, habitSummary)
+	}
+
+	// Return the response
 	response := models.HabitsSummaryResponseV1{}
-	response.Habits = []models.HabitSummary{
-		{
-			Date:        "2023-08-26",
-			MissedHabit: false,
-			Completed:   []string{"goal-1", "goal-2"},
-			Uncompleted: []string{"goal-3", "goal-4", "goal-5"},
-		},
-		{
-			Date:        "2023-08-25",
-			MissedHabit: false,
-			Completed:   []string{"goal-1", "goal-3"},
-			Uncompleted: []string{"goal-2", "goal-4", "goal-5"},
-		},
-		{
-			Date:        "2023-08-24",
-			MissedHabit: false,
-			Completed:   []string{"goal-1", "goal-2", "goal-3"},
-			Uncompleted: []string{"goal-4", "goal-5"},
-		},
-		{
-			Date:        "2023-08-23",
-			MissedHabit: true,
-			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-22",
-			MissedHabit: true,
-			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-21",
-			MissedHabit: false,
-			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-20",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-19",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-18",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-17",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-16",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-15",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-14",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-13",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-12",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-11",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-10",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-09",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-08",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-07",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-06",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{},
-		},
-		{
-			Date:        "2023-08-05",
-			MissedHabit: false,
-			Completed:   []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5"},
-			Uncompleted: []string{"goal-6", "goal-7"},
-		},
-		{
-			Date:        "2023-08-04",
-			MissedHabit: true,
-			Completed:   []string{},
-			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
-		},
-		{
-			Date:        "2023-08-03",
-			MissedHabit: true,
-			Completed:   []string{},
-			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
-		},
-		{
-			Date:        "2023-08-02",
-			MissedHabit: true,
-			Completed:   []string{},
-			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
-		},
-		{
-			Date:        "2023-08-01",
-			MissedHabit: false,
-			Completed:   []string{},
-			Uncompleted: []string{"goal-1", "goal-2", "goal-3", "goal-4", "goal-5", "goal-6", "goal-7"},
-		},
-	}
-
+	response.Habits = summaries
 	data, err := json.Marshal(&response)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
