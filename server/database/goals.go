@@ -3,10 +3,13 @@ package database
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
 	"google.golang.org/api/iterator"
+
+	log "github.com/simon-duchastel/habit-tracker/server/utils"
 )
 
 const goalsCollection = "goals"
@@ -54,6 +57,7 @@ func GetGoalsActiveInRange(
 			break
 		}
 		if err != nil {
+			log.LogError(fmt.Sprintf("Received error getting next goal: %v", err))
 			return nil, err
 		}
 
