@@ -62,7 +62,7 @@ func GetHabitsSummary(w http.ResponseWriter, r *http.Request) {
 	var startingFrom time.Time = time.Now().UTC()
 	if r.URL.Query().Has(startingFromParam) {
 		var err error
-		if startingFrom, err = time.Parse(startingFromString, time.DateOnly); err != nil {
+		if startingFrom, err = time.Parse(time.DateOnly, startingFromString); err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "'startingFrom' param must be a valid date of the form YYYY-MM-DD: %v is invalid", startingFromString)
 			return
