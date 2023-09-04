@@ -6,13 +6,15 @@ import com.duchastel.simon.habittracker.repositories.IdentityRepository
 class IdentityRepositoryImpl(
     private val identityTarget: IdentityTarget,
 ): IdentityRepository {
-    override suspend fun userId(): String {
+    override suspend fun userId(): UserId {
         val response = identityTarget.whoAmI()
         val identityResponse = response.body()
         return if (response.isSuccessful && identityResponse != null) {
-            identityResponse.identity.UserId
+            identityResponse.identity.userId
         } else {
             throw Exception("TODO - handle this gracefully")
         }
     }
 }
+
+typealias UserId = String

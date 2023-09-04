@@ -7,5 +7,6 @@ val appModule = module {
         networkModule,
         repositoryModule,
         viewModelModule,
+        utilsModule,
     )
 }

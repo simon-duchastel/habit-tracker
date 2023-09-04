@@ -1,5 +1,6 @@
 package com.duchastel.simon.habittracker.di
 
+import com.duchastel.simon.habittracker.network.targets.HabitsSummaryTarget
 import com.duchastel.simon.habittracker.network.targets.IdentityTarget
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -36,6 +37,7 @@ val networkModule = module {
 
     // Targets
     single { buildNetworkTarget(target = IdentityTarget::class.java) }
+    single { buildNetworkTarget(target = HabitsSummaryTarget::class.java) }
 }
 
 // Helper function to automatically resolve retrofit and create network targets a bit more easily
