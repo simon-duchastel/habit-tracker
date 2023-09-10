@@ -14,6 +14,8 @@ paths:
   /v1/whoami:
     get:
       summary: (DRAFT) Gets the identity of the current user.
+      produces:
+        - application/json
       operationId: getWhoAmIV1
       tags:
         - Identity
@@ -35,6 +37,8 @@ paths:
   /v1/{userId}/habits/summary:
     get:
       summary: (DRAFT) Gets how many habits the user has completed each day for some number of days.
+      produces:
+        - application/json
       operationId: getHabitsSummaryV1
       tags:
         - Habits
@@ -78,6 +82,8 @@ paths:
     get:
       summary: (DRAFT) Get the habits the user has completed on a particular day.
       operationId: getHabitsForDayV1
+      produces:
+        - application/json
       tags:
         - Habits
       parameters:
@@ -114,6 +120,10 @@ paths:
     post:
       summary: (DRAFT) Post that the user has completed a habit for a particular day.
       operationId: postHabitsForDayV1
+      consumes:
+        - application/json
+      produces:
+        - application/json
       tags:
         - Habits
       parameters:
@@ -156,6 +166,8 @@ paths:
     get:
       summary: (DRAFT) Get the user's current goals.
       operationId: getGoalsV1
+      produces:
+        - application/json
       tags:
         - Goals
       parameters:
@@ -187,6 +199,10 @@ paths:
     post:
       summary: (DRAFT) Modify the user's current goals.
       operationId: postGoalsV1
+      consumes:
+        - application/json
+      produces:
+        - application/json
       tags:
         - Goals
       parameters:
