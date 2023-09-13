@@ -16,7 +16,7 @@ func InitGetWhoAmI() {
 
 func GetWhoAmI(w http.ResponseWriter, r *http.Request) {
 	response := models.WhoAmIResponseV1{}
-	response.Identity.UserId = "user-123"
+	response.Identity.UserId = "test-user"
 
 	data, err := json.Marshal(&response)
 	if err != nil {

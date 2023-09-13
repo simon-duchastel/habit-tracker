@@ -6,6 +6,7 @@ type Identity struct {
 
 type HabitSummary struct {
 	Date        string   `json:"date"`
+	MissedHabit bool     `json:"missedHabit"`
 	Completed   []string `json:"completed"`
 	Uncompleted []string `json:"uncompleted"`
 }

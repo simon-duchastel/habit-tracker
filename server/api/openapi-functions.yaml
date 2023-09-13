@@ -14,6 +14,8 @@ paths:
   /v1/whoami:
     get:
       summary: (DRAFT) Gets the identity of the current user.
+      produces:
+        - application/json
       operationId: getWhoAmIV1
       tags:
         - Identity
@@ -35,6 +37,8 @@ paths:
   /v1/{userId}/habits/summary:
     get:
       summary: (DRAFT) Gets how many habits the user has completed each day for some number of days.
+      produces:
+        - application/json
       operationId: getHabitsSummaryV1
       tags:
         - Habits
@@ -53,7 +57,7 @@ paths:
           name: count
           required: false
           type: integer
-          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 100.
+          description: The number of dates to lookup. No more than this number of summary results will be returned, although fewer may be returned. Defaults to 20. Must be larger than 0 and smaller or equal to 200.
       x-google-backend:
         address: https://us-west1-simon-duchastel-habit-tracker.cloudfunctions.net/v1-get-habits-summary
         protocol: h2
@@ -78,6 +82,8 @@ paths:
     get:
       summary: (DRAFT) Get the habits the user has completed on a particular day.
       operationId: getHabitsForDayV1
+      produces:
+        - application/json
       tags:
         - Habits
       parameters:
@@ -114,6 +120,10 @@ paths:
     post:
       summary: (DRAFT) Post that the user has completed a habit for a particular day.
       operationId: postHabitsForDayV1
+      consumes:
+        - application/json
+      produces:
+        - application/json
       tags:
         - Habits
       parameters:
@@ -156,6 +166,8 @@ paths:
     get:
       summary: (DRAFT) Get the user's current goals.
       operationId: getGoalsV1
+      produces:
+        - application/json
       tags:
         - Goals
       parameters:
@@ -187,6 +199,10 @@ paths:
     post:
       summary: (DRAFT) Modify the user's current goals.
       operationId: postGoalsV1
+      consumes:
+        - application/json
+      produces:
+        - application/json
       tags:
         - Goals
       parameters:
@@ -250,6 +266,8 @@ definitions:
             date:
               type: string
               example: "YYYY-MM-DD"
+            missedHabit:
+              type: boolean
             completed:
               type: array
               items:
